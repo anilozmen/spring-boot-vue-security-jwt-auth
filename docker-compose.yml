@@ -1,0 +1,54 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15.2
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: blog
+      PGDATA: /data/postgres
+    volumes:
+      - db:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - db
+    restart: unless-stopped
+
+  backend:
+    container_name: backend
+    image: anilozmen/blog-jwt-backend:1.0
+    environment:
+      SPRING_DATA_SOURCE_URL: jdbc:postgresql://postgres:5432/blog
+      SPRING_DATA_SOURCE_USERNAME: root
+      SPRING_DATA_SOURCE_PASSWORD: password
+      JWT_SECRET_KEY: <INSERT-YOUR-SECRET>
+      JWT_SECRET_KEY_EXPIRATION: 86400000
+      JWT_REFRESH_TOKEN_EXPIRATION: 604800000
+    ports:
+      - "8080:8080"
+    networks:
+      - db
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  frontend:
+    container_name: frontend
+    image: anilozmen/blog-jwt-frontend:1.0
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      API_BASE_URL: http://localhost:8080/api/v1
+      NUXT_HOST: 0.0.0.0
+      NUXT_PORT: 3000
+    restart: unless-stopped
+
+networks:
+  db:
+    driver: bridge
+
+volumes:
+  db:

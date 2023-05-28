@@ -1,0 +1,5 @@
+.env
+.dockerignore
+.DS_Store
+.idea
+Dockerfile
